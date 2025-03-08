@@ -25,16 +25,17 @@ const daysOfWeek = [
   "Samedi",
   "Dimanche",
 ];
+
 const exercises = [
-  { id: "morningPrayer", label: "Prière Matinale" },
-  { id: "mass", label: "Messe" },
-  { id: "rosary", label: "Chapelet" },
-  { id: "lectio", label: "Lectio" },
-  { id: "fasting", label: "Jeûne" },
-  { id: "eveningPrayer", label: "Prière du Soir" },
-  { id: "tuesdayPrayer", label: "Prière Mardi" },
-  { id: "fridayPrayer", label: "Prière Vendredi" },
-  { id: "wakeupSpace", label: "Espace du Réveil" },
+  { id: "morningPrayer", label: "Prière Matinale", availableAll: true },
+  { id: "mass", label: "Messe", availableAll: true },
+  { id: "rosary", label: "Chapelet", availableAll: true },
+  { id: "lectio", label: "Lectio", availableAll: true },
+  { id: "fasting", label: "Jeûne", availableAll: true },
+  { id: "eveningPrayer", label: "Prière du Soir", availableAll: true },
+  { id: "tuesdayPrayer", label: "Prière Mardi 21h45", availableDay: 1 }, // Mardi
+  { id: "fridayPrayer", label: "Prière Vendredi 21h45", availableDay: 4 }, // Vendredi
+  { id: "wakeupSpace", label: "Espace du Réveil", availableDay: 0 }, // Dimanche
 ];
 
 interface WeeklyTrackerProps {
@@ -45,10 +46,9 @@ interface WeeklyTrackerProps {
 export function WeeklyTracker({ entry, onUpdate }: WeeklyTrackerProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [localEntry, setLocalEntry] = useState<WeeklyEntry>({
-    ...entry,
-    days: Array.isArray(entry.days) ? entry.days : [],
-  });
+  const [localEntry, setLocalEntry] = useState<WeeklyEntry>(entry);
+  const [isWeeklyView, setIsWeeklyView] = useState(false); // État pour gérer la vue
+  const [selectedDay, setSelectedDay] = useState(new Date().getDay()); // État pour le jour sélectionné
 
   const handleCheckboxChange = (
     day: number,
@@ -58,10 +58,7 @@ export function WeeklyTracker({ entry, onUpdate }: WeeklyTrackerProps) {
     const updatedDays = [...localEntry.days];
 
     if (!updatedDays[day]) {
-      updatedDays[day] = {
-        date: new Date(),
-        exercises: {},
-      };
+      updatedDays[day] = { date: new Date(), exercises: {} };
     }
 
     updatedDays[day].exercises = {
@@ -92,7 +89,6 @@ export function WeeklyTracker({ entry, onUpdate }: WeeklyTrackerProps) {
       });
       onUpdate();
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
@@ -103,6 +99,107 @@ export function WeeklyTracker({ entry, onUpdate }: WeeklyTrackerProps) {
     }
   };
 
+  const isExerciseAvailable = (exerciseId: string, dayIndex: number) => {
+    const exercise = exercises.find((e) => e.id === exerciseId);
+    if (!exercise) return false;
+
+    if (exercise.availableAll) return true; // Disponible tous les jours
+    return exercise.availableDay === dayIndex; // Disponible uniquement le jour spécifié
+  };
+
+  const DailyView = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">
+        Jour en cours : {daysOfWeek[selectedDay]}
+      </h3>
+      <div className="flex space-x-2 mb-4">
+        {daysOfWeek.map((day, index) => (
+          <Button
+            key={index}
+            variant={selectedDay === index ? "link" : "default"} // Mettre en surbrillance le jour sélectionné
+            onClick={() => setSelectedDay(index)}
+          >
+            {day}
+          </Button>
+        ))}
+      </div>
+      <table className="w-full">
+        <tbody>
+          {exercises.map((exercise) => (
+            <tr key={exercise.id} className="border-b last:border-b-0">
+              <td className="p-4 font-medium">{exercise.label}</td>
+              <td className="text-center p-4">
+                <Checkbox
+                  checked={
+                    localEntry.days[selectedDay]?.exercises?.[exercise.id] ||
+                    false
+                  }
+                  onCheckedChange={(checked) =>
+                    handleCheckboxChange(
+                      selectedDay,
+                      exercise.id,
+                      checked as boolean
+                    )
+                  }
+                  disabled={!isExerciseAvailable(exercise.id, selectedDay)}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  const WeeklyView = () => (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse">
+        <thead>
+          <tr>
+            <th className="text-left p-2 border-b"></th>
+            {daysOfWeek.map((day, index) => (
+              <th key={index} className="text-center p-2 border-b">
+                {day}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {exercises.map((exercise) => (
+            <tr key={exercise.id} className="border-b last:border-b-0">
+              <td className="p-2 font-medium">
+                {exercise.label}
+                {!exercise.availableAll && (
+                  <span className="text-xs text-muted-foreground ml-1">
+                    ({daysOfWeek[exercise.availableDay || 0]} uniquement)
+                  </span>
+                )}
+              </td>
+              {daysOfWeek.map((_, dayIndex) => (
+                <td key={dayIndex} className="text-center p-2">
+                  <Checkbox
+                    checked={
+                      localEntry.days[dayIndex]?.exercises?.[exercise.id] ||
+                      false
+                    }
+                    onCheckedChange={(checked) =>
+                      handleCheckboxChange(
+                        dayIndex,
+                        exercise.id,
+                        checked as boolean
+                      )
+                    }
+                    disabled={!isExerciseAvailable(exercise.id, dayIndex)}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <Card>
@@ -111,47 +208,18 @@ export function WeeklyTracker({ entry, onUpdate }: WeeklyTrackerProps) {
           <CardDescription>
             Cochez les exercices spirituels que vous avez accomplis chaque jour
           </CardDescription>
+          <Button
+            variant="outline"
+            onClick={() => setIsWeeklyView(!isWeeklyView)}
+          >
+            {isWeeklyView ? "Vue journalière" : "Vue hebdomadaire"}
+          </Button>
+          <p className="text-sm">
+            Vue actuelle : {isWeeklyView ? "Hebdomadaire" : "Journalière"}
+          </p>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="text-left p-2 border-b"></th>
-                  {daysOfWeek.map((day, index) => (
-                    <th key={index} className="text-center p-2 border-b">
-                      {day}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {exercises.map((exercise) => (
-                  <tr key={exercise.id} className="border-b last:border-b-0">
-                    <td className="p-2 font-medium">{exercise.label}</td>
-                    {daysOfWeek.map((_, dayIndex) => (
-                      <td key={dayIndex} className="text-center p-2">
-                        <Checkbox
-                          checked={
-                            localEntry.days[dayIndex]?.exercises?.[
-                              exercise.id
-                            ] || false
-                          }
-                          onCheckedChange={(checked) =>
-                            handleCheckboxChange(
-                              dayIndex,
-                              exercise.id,
-                              checked as boolean
-                            )
-                          }
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {isWeeklyView ? <WeeklyView /> : <DailyView />}
         </CardContent>
       </Card>
 
@@ -197,7 +265,7 @@ export function WeeklyTracker({ entry, onUpdate }: WeeklyTrackerProps) {
             />
           </div>
           <div className="space-y-2">
-            <h3 className="text-sm font-medium">Points d'amélioration</h3>
+            <h3 className="text-sm font-medium">Points d&apos;amélioration</h3>
             <Textarea
               placeholder="Vos points d'amélioration..."
               value={localEntry.improvements || ""}

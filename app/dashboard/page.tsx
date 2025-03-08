@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,6 +22,7 @@ import { fetchEntries, createEntry } from "@/lib/client/api";
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
+  const clerk = useClerk();
   const router = useRouter();
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -42,6 +43,7 @@ export default function DashboardPage() {
 
   const loadEntries = useCallback(async () => {
     if (!user) return;
+    console.log("user", user);
 
     setIsLoading(true);
     try {
@@ -95,6 +97,10 @@ export default function DashboardPage() {
     }
   };
 
+  const handleSignOut = () => {
+    clerk.signOut();
+  };
+
   if (!isLoaded) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -108,6 +114,13 @@ export default function DashboardPage() {
       <header className="mb-8">
         <h1 className="text-3xl font-bold">Mon Carnet de Carême</h1>
         <p className="text-muted-foreground">Suivez votre parcours spirituel</p>
+        <p className="text-sm">Bienvenue : {user!.fullName}</p>
+        <p className="text-sm">
+          Date actuelle : {currentDate.toLocaleDateString()}
+        </p>
+        <Button onClick={handleSignOut} variant="outline" className="mt-2">
+          Déconnexion
+        </Button>
       </header>
 
       <div className="flex items-center justify-between mb-6">
