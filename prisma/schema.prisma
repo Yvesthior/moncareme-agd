@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model WeeklyEntry {
+  id           String    @id @default(cuid())
+  userId       String
+  startDate    DateTime
+  endDate      DateTime
+  charityActs  String?
+  comments     String?
+  difficulties String?
+  improvements String?
+  successes    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  days         DayEntry[]
+}
+
+model DayEntry {
+  id           String      @id @default(cuid())
+  weeklyEntryId String
+  date         DateTime
+  exercises    Json
+  weeklyEntry  WeeklyEntry @relation(fields: [weeklyEntryId], references: [id], onDelete: Cascade)
+}
+
