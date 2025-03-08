@@ -3,10 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { DayEntry } from "@/types/entries";
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
   try {
     const { userId } = await auth();
 
@@ -14,7 +11,11 @@ export async function PUT(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const entryId = params.id;
+    const url = new URL(request.url);
+
+    const entryId = url.pathname.split("/").pop();
+
+    // const entryId = params.id;
     const entryData = await request.json();
 
     // Vérifier que l'entrée appartient à l'utilisateur
