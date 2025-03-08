@@ -1,12 +1,15 @@
-import { db } from "@/lib/db"
-import type { WeeklyEntry } from "@/types/entries"
-import { auth } from "@clerk/nextjs"
+import { db } from "@/lib/db";
+import type { WeeklyEntry } from "@/types/entries";
+import { auth } from "@clerk/nextjs/server";
 
-export async function getUserEntries(startDate: Date, endDate: Date): Promise<WeeklyEntry[]> {
-  const { userId } = auth()
+export async function getUserEntries(
+  startDate: Date,
+  endDate: Date
+): Promise<WeeklyEntry[]> {
+  const { userId } = await auth();
 
   if (!userId) {
-    throw new Error("User not authenticated")
+    throw new Error("User not authenticated");
   }
 
   const entries = await db.weeklyEntry.findMany({
@@ -22,7 +25,7 @@ export async function getUserEntries(startDate: Date, endDate: Date): Promise<We
     include: {
       days: true,
     },
-  })
+  });
 
   return entries.map((entry) => ({
     id: entry.id,
@@ -39,14 +42,17 @@ export async function getUserEntries(startDate: Date, endDate: Date): Promise<We
       date: day.date,
       exercises: day.exercises as Record<string, boolean>,
     })),
-  }))
+  }));
 }
 
-export async function createNewWeek(startDate: Date, endDate: Date): Promise<WeeklyEntry> {
-  const { userId } = auth()
+export async function createNewWeek(
+  startDate: Date,
+  endDate: Date
+): Promise<WeeklyEntry> {
+  const { userId } = await auth();
 
   if (!userId) {
-    throw new Error("User not authenticated")
+    throw new Error("User not authenticated");
   }
 
   const entry = await db.weeklyEntry.create({
@@ -64,7 +70,7 @@ export async function createNewWeek(startDate: Date, endDate: Date): Promise<Wee
     include: {
       days: true,
     },
-  })
+  });
 
   return {
     id: entry.id,
@@ -81,18 +87,20 @@ export async function createNewWeek(startDate: Date, endDate: Date): Promise<Wee
       date: day.date,
       exercises: day.exercises as Record<string, boolean>,
     })),
-  }
+  };
 }
 
-export async function updateWeeklyEntry(entry: WeeklyEntry): Promise<WeeklyEntry> {
-  const { userId } = auth()
+export async function updateWeeklyEntry(
+  entry: WeeklyEntry
+): Promise<WeeklyEntry> {
+  const { userId } = await auth();
 
   if (!userId) {
-    throw new Error("User not authenticated")
+    throw new Error("User not authenticated");
   }
 
   if (entry.userId !== userId) {
-    throw new Error("Unauthorized")
+    throw new Error("Unauthorized");
   }
 
   const updatedEntry = await db.weeklyEntry.update({
@@ -123,7 +131,7 @@ export async function updateWeeklyEntry(entry: WeeklyEntry): Promise<WeeklyEntry
     include: {
       days: true,
     },
-  })
+  });
 
   return {
     id: updatedEntry.id,
@@ -140,6 +148,5 @@ export async function updateWeeklyEntry(entry: WeeklyEntry): Promise<WeeklyEntry
       date: day.date,
       exercises: day.exercises as Record<string, boolean>,
     })),
-  }
+  };
 }
-
