@@ -311,7 +311,7 @@ export function WeeklyTracker({ entry, onUpdate }: WeeklyTrackerProps) {
             />
           </div>
           <div className="space-y-2">
-            <h3 className="text-sm font-medium">Points d'amélioration</h3>
+            <h3 className="text-sm font-medium">Points d&apos;amélioration</h3>
             <Textarea
               placeholder="Vos points d'amélioration..."
               value={localEntry.improvements || ""}
