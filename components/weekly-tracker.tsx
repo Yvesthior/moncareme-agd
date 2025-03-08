@@ -89,6 +89,7 @@ export function WeeklyTracker({ entry, onUpdate }: WeeklyTrackerProps) {
       });
       onUpdate();
     } catch (error) {
+      console.log("error", error);
       toast({
         variant: "destructive",
         title: "Erreur",

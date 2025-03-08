@@ -1,12 +1,14 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="bg-primary text-primary-foreground py-6">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold text-center">Mon Carnet de Carême</h1>
+          <h1 className="text-3xl font-bold text-center">
+            Mon Carnet de Carême
+          </h1>
           <p className="text-center mt-2">Apostolat Génération David</p>
         </div>
       </header>
@@ -14,10 +16,13 @@ export default function Home() {
       <main className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-3xl mx-auto text-center space-y-8">
           <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Bienvenue sur votre Carnet de Carême</h2>
+            <h2 className="text-2xl font-bold">
+              Bienvenue sur votre Carnet de Carême
+            </h2>
             <p className="text-lg">
-              Suivez votre parcours spirituel pendant le Carême avec cet outil qui vous permet de noter vos exercices
-              spirituels, actes de charité et réflexions quotidiennes.
+              Suivez votre parcours spirituel pendant le Carême avec cet outil
+              qui vous permet de noter vos exercices spirituels, actes de
+              charité et réflexions quotidiennes.
             </p>
           </div>
 
@@ -28,7 +33,7 @@ export default function Home() {
               </Button>
             </Link>
             <Link href="/sign-up" className="w-full">
-              <Button className="w-full">S'inscrire</Button>
+              <Button className="w-full">S&apos;inscrire</Button>
             </Link>
           </div>
 
@@ -47,10 +52,12 @@ export default function Home() {
 
       <footer className="bg-muted py-6">
         <div className="container mx-auto px-4 text-center text-sm">
-          <p>© {new Date().getFullYear()} Apostolat Génération David - Mon Carnet de Carême</p>
+          <p>
+            © {new Date().getFullYear()} Apostolat Génération David - Mon Carnet
+            de Carême
+          </p>
         </div>
       </footer>
     </div>
-  )
+  );
 }
-
