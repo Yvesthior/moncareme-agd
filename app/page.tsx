@@ -1,14 +1,20 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <header className="bg-primary text-primary-foreground py-6">
-        <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold text-center">
-            Mon Carnet de Carême
-          </h1>
+        <div className="container mx-auto px-4 text-center">
+          <Image
+            src="/logoAGD.png"
+            alt="Logo de l'Apostolat Génération David"
+            width={150}
+            height={150}
+            className="mx-auto mb-4"
+          />
+          <h1 className="text-3xl font-bold">Mon Carnet de Carême</h1>
           <p className="text-center mt-2">Apostolat Génération David</p>
         </div>
       </header>

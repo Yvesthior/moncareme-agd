@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useClerk } from "@clerk/nextjs";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,10 +16,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WeeklyTracker } from "@/components/weekly-tracker";
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from "date-fns";
 import { fr } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, LogOut, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { WeeklyEntry } from "@/types/entries";
 import { fetchEntries, createEntry } from "@/lib/client/api";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function DashboardPage() {
   const { user, isLoaded } = useUser();
@@ -43,7 +50,6 @@ export default function DashboardPage() {
 
   const loadEntries = useCallback(async () => {
     if (!user) return;
-    console.log("user", user);
 
     setIsLoading(true);
     try {
@@ -110,25 +116,64 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold">Mon Carnet de Carême</h1>
-        <p className="text-muted-foreground">Suivez votre parcours spirituel</p>
-        <p className="text-sm">Bienvenue : {user!.fullName}</p>
-        <p className="text-sm">
-          Date actuelle : {currentDate.toLocaleDateString()}
-        </p>
-        <Button onClick={handleSignOut} variant="outline" className="mt-2">
-          Déconnexion
-        </Button>
+    <div className="container mx-auto px-4 pb-8">
+      {/* Header avec logo */}
+      <header className="py-4 mb-6 border-b">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="relative h-12 w-12 sm:h-16 sm:w-16">
+              <Image
+                src="/logoAGD.png"
+                alt="Logo AGD"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                Mon Carnet de Carême
+              </h1>
+              <p className="text-sm text-muted-foreground hidden sm:block">
+                Apostolat Génération David
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="text-right hidden sm:block">
+              <p className="font-medium">{user!.fullName}</p>
+              <p className="text-xs text-muted-foreground">
+                {format(new Date(), "d MMMM yyyy", { locale: fr })}
+              </p>
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem className="sm:hidden">
+                  <span>{user!.fullName}</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Déconnexion</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
       </header>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={handlePreviousWeek}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-xl font-semibold">
+          <h2 className="text-lg sm:text-xl font-semibold">
             Semaine du {formattedDateRange}
           </h2>
           <Button variant="outline" size="icon" onClick={handleNextWeek}>
@@ -136,7 +181,7 @@ export default function DashboardPage() {
           </Button>
         </div>
         {entries.length === 0 && !isLoading && (
-          <Button onClick={handleCreateNewWeek}>
+          <Button onClick={handleCreateNewWeek} className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Nouvelle semaine
           </Button>
@@ -151,7 +196,7 @@ export default function DashboardPage() {
         </Card>
       ) : entries.length > 0 ? (
         <Tabs defaultValue="tracker" className="space-y-4">
-          <TabsList>
+          <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
             <TabsTrigger value="tracker">Suivi hebdomadaire</TabsTrigger>
             <TabsTrigger value="reflections">Réflexions</TabsTrigger>
           </TabsList>
